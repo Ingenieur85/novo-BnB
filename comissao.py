@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
+# coding=utf
+
 import sys
+import time
+
+# Global counter for nodes
+nodes_analyzed = 0
 
 def read_input():
     l, n = map(int, input().split())
@@ -55,22 +62,26 @@ def improved_bounding_function(E, F, candidates, l):
     return len(E) + (len(uncovered_elements) + max_coverage - 1) // max_coverage
 
 def backtrack(solution, candidates, l, best_solution, disable_pruning, disable_optimality_cuts, use_original_bounding):
+    global nodes_analyzed
+    nodes_analyzed += 1  # Increment node counter
+
     if is_feasible(solution, candidates, l):
-        if len(solution) < len(best_solution) or not best_solution:
+        if best_solution is None or len(solution) < len(best_solution):
             return solution
         return best_solution
 
     choices = compute_choices(solution, candidates, l, disable_pruning)
     
-    # Apply bounding function
+    # Utiliza a função limitante, se cortes por otimalidade estiverem desabilitados
     if not disable_optimality_cuts:
         bounding_function = original_bounding_function if use_original_bounding else improved_bounding_function
         B = bounding_function(solution, choices, candidates, l)
-        if best_solution and B >= len(best_solution):
+        if best_solution is not None and B >= len(best_solution):
             return best_solution
 
+    # Faz a busca em profundidade
     for choice in choices:
-        if choice not in solution:  # Avoid adding the same candidate twice
+        if choice not in solution:
             new_solution = solution + [choice]
             result = backtrack(new_solution, candidates, l, best_solution, disable_pruning, disable_optimality_cuts, use_original_bounding)
             if result:
@@ -80,18 +91,31 @@ def backtrack(solution, candidates, l, best_solution, disable_pruning, disable_o
     return best_solution
 
 def main():
+    global nodes_analyzed
     disable_pruning = '-f' in sys.argv
     disable_optimality_cuts = '-o' in sys.argv
     use_original_bounding = '-a' in sys.argv
     l, n, candidates = read_input()
     
     initial_solution = []
+    
+    # Start timing
+    start_time = time.time()
+    
     best_solution = backtrack(initial_solution, candidates, l, None, disable_pruning, disable_optimality_cuts, use_original_bounding)
+    
+    # End timing
+    end_time = time.time()
+    execution_time = end_time - start_time
 
     if best_solution:
         print(' '.join(str(i+1) for i in best_solution))
     else:
         print("Inviavel")
+    
+    # Output metrics to stderr
+    sys.stderr.write(f"Nós percorridos: {nodes_analyzed}\n")
+    sys.stderr.write(f"Tempo de execução(s): {execution_time:.6f}\n")
 
 if __name__ == "__main__":
     main()
