@@ -1,8 +1,6 @@
 # Trabalho 2 - Otimização
 UFPR - 2024
 
-Feito por Fabiano A. de Sá Filho
-GRR: 20223831
 
 ## Descrição
 Este trabalho resolve instâncias do problema de cobertura mínima de conjuntos. Ler o relatório para mais detalhes.
